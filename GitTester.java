@@ -25,5 +25,37 @@ public class GitTester extends Git {
         initRepo();
         System.out.println(verify());
         cleanUp();
+
+        File sampleDir = new File("git/samples");
+        sampleDir.mkdirs();
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("git/samples/file1.txt"))) {
+            bufferedWriter.write("Hello world");
+        }
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("git/samples/file2.txt"))) {
+            bufferedWriter.write("Hello world again");
+        }
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("git/samples/file3.txt"))) {
+            bufferedWriter.write("Hello world again again");
+        }
+        blob("git/samples/file1.txt");
+        blob("git/samples/file2.txt");
+        blob("git/samples/file3.txt");
+        addToIdx(hashFile("git/samples/file1.txt"), "git/samples/file1.txt");
+        addToIdx(hashFile("git/samples/file2.txt"), "git/samples/file2.txt");
+        addToIdx(hashFile("git/samples/file3.txt"), "git/samples/file3.txt");
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader("git/index"))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] s = line.split(" ", 2);
+                if (s.length == 2) {
+                    String hash = s[0];
+                    File blob = new File("git/objects", hash);
+                    if (blob.exists()) System.out.println("yess");
+                    else System.out.println("nooo");
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
