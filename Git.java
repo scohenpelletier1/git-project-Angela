@@ -44,6 +44,7 @@ public class Git {
         return null;
     }
 
+<<<<<<< HEAD
     public static void blob(String filepath) throws IOException {
         File f1 = new File(filepath);
         String hash = hashFile(filepath);
@@ -56,6 +57,24 @@ public class Git {
                     bufferedWriter.write(s);
                     bufferedWriter.newLine();
                 }
+=======
+    public static boolean blobExists(String hash) {
+        File f = new File("objects");
+        if (!f.exists()) {
+            System.out.println("Objects directory doesn't exist.");
+            return false;
+        }
+        File f1 = new File(f, hash);
+        return f1.exists();
+    }
+
+    public static void reset() {
+        File f = new File("objects");
+        File[] fs = f.listFiles();
+        if (fs != null) {
+            for (File file : fs) {
+                if (file.isFile()) file.delete();
+>>>>>>> 5d78fbc ((GP-2.3.1): Program checks for blob existence and resets)
             }
         }
     }
