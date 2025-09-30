@@ -12,19 +12,42 @@ public class GitTester extends Git {
     }
 
     public static void cleanUp() {
-        File f1 = new File("git");
-        File f2 = new File("git/objects");
-        File f3 = new File("git/index");
-        File f4 = new File("git/HEAD");
-        f2.delete();
-        f3.delete();
-        f4.delete();
-        f1.delete();
+        File f = new File("git");
+        cleanUpHelper(f);
+    }
+
+    public static void cleanUpHelper(File file) {
+        if (!file.exists()) return;
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File f : files) cleanUpHelper(f);
+            }
+        }
+        file.delete();
+    }
+
+    public static void reset() {
+        File obj = new File("git/objects");
+        if (obj.exists() && obj.isDirectory()) {
+            File[] files = obj.listFiles();
+            if (files != null) {
+                for (File f : files) f.delete();
+            }
+        }
+        File idx = new File("git/index");
+        if (idx.exists()) {
+            try (FileWriter fw = new FileWriter(idx)) {
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
     public static void main(String[] args) throws IOException {
         initRepo();
         System.out.println(verify());
         cleanUp();
+        reset();
 
         File sampleDir = new File("git/samples");
         sampleDir.mkdirs();
