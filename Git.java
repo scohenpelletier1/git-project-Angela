@@ -14,7 +14,7 @@ public class Git {
         if(f1.exists() && f2.exists() && f3.exists() && f4.exists()) System.out.println("Git Repository Already Exists");
         else System.out.println("Git Repository Created");
         if(!f1.exists()) f1.mkdir();
-        if(!f2.exists()) f2.mkdir();
+        if (!f2.exists()) f2.mkdirs();
         if(!f3.exists()) f3.createNewFile();
         if(!f4.exists()) f4.createNewFile();
     }
@@ -49,7 +49,9 @@ public class Git {
     public static void blob(String filepath) throws IOException {
         File f1 = new File(filepath);
         String hash = hashFile(filepath);
-        File f2 = new File("git/objects/" + hash);
+        File objectsDir = new File("git/objects");
+        if (!objectsDir.exists()) objectsDir.mkdirs();
+        File f2 = new File(objectsDir, hash);
         f2.createNewFile();
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(f2))) {
             try (BufferedReader bufferedReader = new BufferedReader(new FileReader(f1))) {
@@ -112,6 +114,47 @@ public class Git {
             e.printStackTrace();
         }
     }
+
+    public static String genTree(String dirPath) throws IOException {
+        File dir = new File(dirPath);
+        if (!dir.exists() || !dir.isDirectory()) {
+            throw new IllegalArgumentException("Invalid dir path " + dirPath);
+        }
+        StringBuilder sb = new StringBuilder();
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                String path = f.getPath();
+                if (f.isFile()) {
+                    blob(path);
+                    String bhash = hashFile(path);
+                    sb.append("blob ").append(bhash).append(" ").append(path).append("\n");
+                } else if (f.isDirectory()) {
+                    String subHash = genTree(path);
+                    sb.append("tree ").append(subHash).append(" ").append(path).append("\n");
+                }
+            }
+        }
+        String str = sb.toString();
+        String hash = null;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] hashedBytes = md.digest(str.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashedBytes) {
+                hexString.append(String.format("%02x", b & 0xff));
+            }
+            hash = hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        File f = new File("git/objects/" + hash);
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(f))) {
+            bufferedWriter.write(str);
+        }
+        return hash;
+    }
+
     public static void main(String[] args) throws IOException {
         initRepo();
         addToIdx(hashFile("git/testFile"), "git/testFile");
