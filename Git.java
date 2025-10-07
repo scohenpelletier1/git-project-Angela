@@ -2,7 +2,10 @@ import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Git {
 
@@ -153,6 +156,104 @@ public class Git {
             bufferedWriter.write(str);
         }
         return hash;
+    }
+
+    public static File createWorkingList() throws IOException {
+        File f = new File("git/index");
+        File wl = new File("git/working_list.txt");
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(f));
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(wl))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                bufferedWriter.write("blob " + line);
+                bufferedWriter.newLine();
+            }
+        }
+        return wl;
+    }
+
+    static class entry {
+        String type;
+        String sha;
+        String path;
+
+        entry(String type, String sha, String path) {
+            this.type = type;
+            this.sha = sha;
+            this.path = path;
+        }
+    }
+
+    public static String genTreesFromIdx() throws IOException {
+        File wl = createWorkingList();
+        List<entry> entries = new ArrayList<>();
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(wl))) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] parts = line.split(" ", 3);
+                entries.add(new entry(parts[0], parts[1], parts[2]));
+            }
+        }
+        while (entries.size() > 1) {
+            String leafDir = findLeafDirectory(entries);
+            if (leafDir == null) break;
+            List<entry> children = new ArrayList<>();
+            for (entry te : entries) {
+                if (te.path.startsWith(leafDir + "/")) {
+                    children.add(te);
+                }
+            }
+            List<String> trLines = new ArrayList<>();
+            for (entry te : children) {
+                String name = te.path.substring(te.path.lastIndexOf("/") + 1);
+                trLines.add(te.type + " " + te.sha + " " + name);
+            }
+            Collections.sort(trLines);
+            String c = String.join("\n", trLines) + "\n";
+            String hash = sha1(c);
+            File objDir = new File("git/objects");
+            if (!objDir.exists()) objDir.mkdirs();
+            File treeFile = new File(objDir, hash);
+            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(treeFile))) {
+                bufferedWriter.write(c);
+            }
+            entries.removeAll(children);
+            entries.add(new entry("tree", hash, leafDir));
+        }
+        entry root = entries.get(0);
+        return root.sha;
+    }
+    private static String findLeafDirectory(List<entry> entries) {
+        Set<String> dirs = new HashSet<>();
+        for (entry te : entries) {
+            if (te.path.contains("/")) {
+                dirs.add(te.path.substring(0, te.path.lastIndexOf("/")));
+            }
+        }
+        for (String dir : dirs) {
+            boolean isLeaf = true;
+            for (String other : dirs) {
+                if (!other.equals(dir) && other.startsWith(dir + "/")) {
+                    isLeaf = false;
+                    break;
+                }
+            }
+            if (isLeaf) return dir;
+        }
+        return null;
+    }
+
+    private static String sha1(String content) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] hashedBytes = md.digest(content.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashedBytes) sb.append(String.format("%02x", b & 0xff));
+            return sb.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static void main(String[] args) throws IOException {
