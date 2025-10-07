@@ -1,6 +1,8 @@
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Git {
 
@@ -60,20 +62,59 @@ public class Git {
         }
     }
 
-    public static void addToIdx(String hash, String filename) {
+    public static void addToIdx(String hash, String filepath) {
         try {
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("git/index"));
-            String ent = hash + " " + filename;
             File f = new File("git/index");
-            if (f.length() > 0) bufferedWriter.newLine();
-            bufferedWriter.write(ent);
-            bufferedWriter.close();
+            if (!f.exists()) f.createNewFile();
+            String path = new File(filepath).getPath();
+            List<String> lines = new ArrayList<>();
+            boolean found = false;
+            boolean updated = false;
+            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(f))) {
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    String[] parts = line.split(" ", 2);
+                    if (parts.length == 2) {
+                        String oldHash = parts[0];
+                        String oldPath = parts[1];
+
+                        if (oldPath.equals(path)) {
+                            found = true;
+                            if (!oldHash.equals(hash)) {
+                                lines.add(hash + " " + path);
+                                updated = true;
+                            } else {
+                                lines.add(line);
+                            }
+                        } else {
+                            lines.add(line);
+                        }
+                    }
+                }
+            }
+            if (!found) {
+                lines.add(hash + " " + path);
+            }
+            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(f))) {
+                for (int i = 0; i < lines.size(); i++) {
+                    bufferedWriter.write(lines.get(i));
+                    if (i < lines.size() - 1) bufferedWriter.newLine();
+                }
+            }
+            File b = new File("git/objects", hash);
+            if (!b.exists() || updated) {
+                blob(filepath);
+                System.out.println("blob made/updated for " + path);
+            } else {
+                System.out.println("duplicate skipped for " + path);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     public static void main(String[] args) throws IOException {
         initRepo();
-        addToIdx(hashFile("testFile"), "testFile");
+        addToIdx(hashFile("git/testFile"), "git/testFile");
+        addToIdx(hashFile("git/samples/file1.txt"), "git/samples/file1.txt");
     }
 }
