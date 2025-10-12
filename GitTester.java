@@ -49,23 +49,23 @@ public class GitTester extends Git {
         cleanUp();
         reset();
 
-        File sampleDir = new File("git/samples");
+        File sampleDir = new File("samples");
         sampleDir.mkdirs();
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("git/samples/file1.txt"))) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/file1.txt"))) {
             bufferedWriter.write("Hello world");
         }
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("git/samples/file2.txt"))) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/file2.txt"))) {
             bufferedWriter.write("Hello world again");
         }
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("git/samples/file3.txt"))) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/file3.txt"))) {
             bufferedWriter.write("Hello world again again");
         }
-        blob("git/samples/file1.txt");
-        blob("git/samples/file2.txt");
-        blob("git/samples/file3.txt");
-        addToIdx(hashFile("git/samples/file1.txt"), "git/samples/file1.txt");
-        addToIdx(hashFile("git/samples/file2.txt"), "git/samples/file2.txt");
-        addToIdx(hashFile("git/samples/file3.txt"), "git/samples/file3.txt");
+        blob("samples/file1.txt");
+        blob("samples/file2.txt");
+        blob("samples/file3.txt");
+        addToIdx(hashFile("samples/file1.txt"), "samples/file1.txt");
+        addToIdx(hashFile("samples/file2.txt"), "samples/file2.txt");
+        addToIdx(hashFile("samples/file3.txt"), "samples/file3.txt");
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader("git/index"))) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -80,5 +80,52 @@ public class GitTester extends Git {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        // add stuff to the samples folder
+        File dirOne = new File("samples/dirOne");
+        File dirTwo = new File("samples/dirOne/dirTwo");
+        File dirThree = new File("samples/dirThree");
+
+        dirOne.mkdir();
+        dirTwo.mkdir();
+        dirThree.mkdir();
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirOne/file1.txt"))) {
+            bufferedWriter.write("Hello world");
+            addToIdx(hashFile("samples/dirOne/file1.txt"), "samples/dirOne/file1.txt");
+        }
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirOne/file2.txt"))) {
+            bufferedWriter.write("Hello world again");
+            addToIdx(hashFile("samples/dirOne/file2.txt"), "samples/dirOne/file2.txt");
+        }
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirOne/dirTwo/file1.txt"))) {
+            bufferedWriter.write("Hello world again again");
+            addToIdx(hashFile("samples/dirOne/dirTwo/file1.txt"), "samples/dirOne/dirTwo/file1.txt");
+        }
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirThree/file1.txt"))) {
+            bufferedWriter.write("Hello world again again");
+            addToIdx(hashFile("samples/dirThree/file1.txt"), "samples/dirThree/file1.txt");
+        }
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirThree/file2.txt"))) {
+            bufferedWriter.write("Hello world again again");
+            addToIdx(hashFile("samples/dirThree/file2.txt"), "samples/dirThree/file2.txt");
+        }
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirThree/file3.txt"))) {
+            bufferedWriter.write("Hello world again again");
+            addToIdx(hashFile("samples/dirThree/file3.txt"), "samples/dirThree/file3.txt");
+        }
+
+        // check to see if genTree() works
+        System.out.println("==genTree()==");
+        System.out.println(Git.genTree("samples")); // all blobs are correct
+        System.out.println();
+
+        // check to see if genTreesFromIdx() works
+        System.out.println("==genTree()==");
+        System.out.println(Git.genTreesFromIdx()); // all blobs are correct
+        System.out.println();
+        reset();
     }
 }
