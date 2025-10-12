@@ -221,6 +221,7 @@ public class Git {
             entries.add(new entry("tree", hash, leafDir));
         }
         entry root = entries.get(0);
+        new File("git/working_list.txt").delete();
         return root.sha;
     }
     private static String findLeafDirectory(List<entry> entries) {
@@ -255,7 +256,7 @@ public class Git {
             return null;
         }
     }
-
+    
     public static void main(String[] args) throws IOException {
         initRepo();
         addToIdx(hashFile("git/testFile"), "git/testFile");
