@@ -43,6 +43,12 @@ public class GitTester extends Git {
             }
         }
     }
+
+    // public static void writeFile() {
+        
+    
+    // }
+
     public static void main(String[] args) throws IOException {
         initRepo();
         System.out.println(verify());
@@ -92,30 +98,41 @@ public class GitTester extends Git {
 
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirOne/file1.txt"))) {
             bufferedWriter.write("Hello world");
-            addToIdx(hashFile("samples/dirOne/file1.txt"), "samples/dirOne/file1.txt");
+
         }
+
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirOne/file2.txt"))) {
             bufferedWriter.write("Hello world again");
-            addToIdx(hashFile("samples/dirOne/file2.txt"), "samples/dirOne/file2.txt");
         }
 
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirOne/dirTwo/file1.txt"))) {
-            bufferedWriter.write("Hello world again again");
-            addToIdx(hashFile("samples/dirOne/dirTwo/file1.txt"), "samples/dirOne/dirTwo/file1.txt");
+            bufferedWriter.write("Hello world");
         }
 
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirThree/file1.txt"))) {
-            bufferedWriter.write("Hello world again again");
-            addToIdx(hashFile("samples/dirThree/file1.txt"), "samples/dirThree/file1.txt");
+            bufferedWriter.write("Hello world");
         }
+
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirThree/file2.txt"))) {
-            bufferedWriter.write("Hello world again again");
-            addToIdx(hashFile("samples/dirThree/file2.txt"), "samples/dirThree/file2.txt");
+            bufferedWriter.write("Hello world again");
         }
+
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirThree/file3.txt"))) {
             bufferedWriter.write("Hello world again again");
-            addToIdx(hashFile("samples/dirThree/file3.txt"), "samples/dirThree/file3.txt");
         }
+
+        blob("samples/dirOne/file1.txt");
+        addToIdx(hashFile("samples/dirOne/file1.txt"), "samples/dirOne/file1.txt");
+        blob("samples/dirOne/file1.txt");
+        addToIdx(hashFile("samples/dirOne/file2.txt"), "samples/dirOne/file2.txt");
+        blob("samples/dirOne/dirTwo/file1.txt");
+        addToIdx(hashFile("samples/dirOne/dirTwo/file1.txt"), "samples/dirOne/dirTwo/file1.txt");
+        blob("samples/dirThree/file1.txt");
+        addToIdx(hashFile("samples/dirThree/file1.txt"), "samples/dirThree/file1.txt");
+        blob("samples/dirThree/file2.txt");
+        addToIdx(hashFile("samples/dirThree/file2.txt"), "samples/dirThree/file2.txt");
+        blob("samples/dirThree/file3.txt");
+        addToIdx(hashFile("samples/dirThree/file3.txt"), "samples/dirThree/file3.txt");
 
         // check to see if genTree() works
         System.out.println("==genTree()==");
@@ -126,6 +143,21 @@ public class GitTester extends Git {
         System.out.println("==genTree()==");
         System.out.println(Git.genTreesFromIdx()); // all blobs are correct
         System.out.println();
-        reset();
+
+        // testing the commmit process
+        System.out.println("==createNewCommit()==");
+        System.out.println(Git.createNewCommit());
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirOne/file1.txt"))) {
+            bufferedWriter.write("I have now updated this file that has the file path samples/dirOne/file1.txt");
+        }
+
+        blob("samples/dirOne/file1.txt");
+        addToIdx(hashFile("samples/dirOne/file1.txt"), "samples/dirOne/file1.txt");
+
+        System.out.println(Git.createNewCommit());
+        System.out.println();
+
     }
+
 }
