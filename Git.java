@@ -1,11 +1,21 @@
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.TimeZone;
 
 public class Git {
 
@@ -224,6 +234,59 @@ public class Git {
         new File("git/working_list.txt").delete();
         return root.sha;
     }
+
+    public static String createNewCommit() throws IOException {
+        // create the string builder
+        StringBuilder commitMessage = new StringBuilder();
+        
+        // add to the commit message
+        commitMessage.append("tree: " + genTreesFromIdx() + "\n");
+        commitMessage.append("parent: " + getLastCommit() + "\n");
+
+        // input of author name
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Author name: ");
+        
+        // update commit message
+        commitMessage.append("author: " + scanner.nextLine() + "\n");
+        scanner.reset();
+
+        // timeee
+        Calendar cal = Calendar.getInstance();
+        int day = cal.get(Calendar.DATE);
+        int month = cal.get(Calendar.MONTH)+1;
+        int year = cal.get(Calendar.YEAR);
+
+        LocalDate currentDate = LocalDate.parse(year + "-" + month + "-" + day);
+        commitMessage.append("date: " + currentDate.getMonth() + " " + currentDate.getDayOfMonth() + ", " + currentDate.getYear() + "\n");
+
+        // input message
+        System.out.print("Commit message: ");
+        commitMessage.append("message: " + scanner.nextLine());
+        scanner.reset(); // cannot close scanner because otherwise this method can't be run anymore
+
+        // create commit file
+        File commitFile = new File("tempName");
+        Path tempName = Paths.get("tempName");
+
+        // write message
+        BufferedWriter writer = new BufferedWriter(new FileWriter(commitFile));
+        writer.write(commitMessage.toString());
+        writer.close();
+
+        // update the commit file path
+        String hash = hashFile(commitFile.getPath());
+        Path newName = Paths.get("git/objects/" + hash);
+
+        Files.move(tempName, newName, StandardCopyOption.REPLACE_EXISTING);
+
+        // update HEAD file
+        updateHead(new File(hash));
+
+        return hash;
+
+    }
+
     private static String findLeafDirectory(List<entry> entries) {
         Set<String> dirs = new HashSet<>();
         for (entry te : entries) {
@@ -255,6 +318,37 @@ public class Git {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static String getLastCommit() throws IOException {
+        // make sure HEAD exists
+        if (!(new File("git/HEAD").isFile())) {
+            File head = new File("git/HEAD");
+            head.createNewFile();
+        
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"));
+        
+        // only get the first line (which is the latest commit)
+        String lastCommit = reader.readLine();
+        reader.close();
+
+        if (lastCommit == null) {
+            return "";
+
+        }
+
+        return lastCommit;
+    
+    }
+
+    private static void updateHead(File commitFile) throws IOException {
+        // update HEAD
+        BufferedWriter writer = new BufferedWriter(new FileWriter("git/HEAD"));
+        writer.write(commitFile.getName());
+        writer.close();
+        
     }
     
     public static void main(String[] args) throws IOException {
