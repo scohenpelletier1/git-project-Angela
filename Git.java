@@ -6,16 +6,13 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.TimeZone;
 
 public class Git {
 
@@ -320,7 +317,7 @@ public class Git {
         }
     }
 
-    private static String getLastCommit() throws IOException {
+    public static String getLastCommit() throws IOException {
         // make sure HEAD exists
         if (!(new File("git/HEAD").isFile())) {
             File head = new File("git/HEAD");
@@ -343,7 +340,7 @@ public class Git {
     
     }
 
-    private static void updateHead(File commitFile) throws IOException {
+    public static void updateHead(File commitFile) throws IOException {
         // update HEAD
         BufferedWriter writer = new BufferedWriter(new FileWriter("git/HEAD"));
         writer.write(commitFile.getName());

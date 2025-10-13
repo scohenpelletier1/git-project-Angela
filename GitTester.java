@@ -1,4 +1,5 @@
 import java.io.*;
+import java.text.FieldPosition;
 
 public class GitTester extends Git {
 
@@ -146,7 +147,7 @@ public class GitTester extends Git {
 
         // testing the commmit process
         System.out.println("==createNewCommit()==");
-        System.out.println(Git.createNewCommit());
+        // System.out.println(Git.createNewCommit());
 
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirOne/file1.txt"))) {
             bufferedWriter.write("I have now updated this file that has the file path samples/dirOne/file1.txt");
@@ -155,8 +156,68 @@ public class GitTester extends Git {
         blob("samples/dirOne/file1.txt");
         addToIdx(hashFile("samples/dirOne/file1.txt"), "samples/dirOne/file1.txt");
 
-        System.out.println(Git.createNewCommit());
+        // System.out.println(Git.createNewCommit());
         System.out.println();
+        cleanUp();
+
+        // TESTING GIT WRAPPER NOW
+        GitWrapper gw = new GitWrapper();
+
+        System.out.println("==init()==");
+        try {
+            gw.init();
+            System.out.println("init() works as expected.");
+        } catch (Exception e) {
+            System.out.println("init() did not function as expected.");
+        }
+        System.out.println();
+
+        System.out.println("==add()==");
+        File myProgram = new File("myProgram");
+        File inner = new File("myProgram/inner");
+        myProgram.mkdir();
+        inner.mkdir();
+
+        File fileHello = new File("myProgram/hello.txt");
+        File fileWorld = new File("myProgram/inner/world.txt");
+        fileHello.createNewFile();
+        fileWorld.createNewFile();
+
+        try {
+            gw.add("myProgram/hello.txt");
+            gw.add("myProgram/inner/world.txt");
+            System.out.println("add() works as expected.");
+        } catch (Exception e) {
+            System.out.println("add() did not function as expected");
+        }
+        System.out.println();
+
+        System.out.println("==commit()==");
+        try {
+            System.out.println(gw.commit("John Doe", "Initial commit"));
+
+            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("myProgram/hello.txt"))) {
+                bufferedWriter.write("Hello, World!");
+            }
+    
+            blob("myProgram/hello.txt");
+            addToIdx(hashFile("myProgram/hello.txt"), "myProgram/hello.txt");
+
+            System.out.println(gw.commit("Sophia", "Second commit"));
+            System.out.println("commit() works as expected.");
+        } catch (Exception e) {
+            System.out.println("commit() did not function as expected");
+        }
+        System.out.println();
+
+        System.out.println("==checkout()==");
+        try {
+            gw.checkout("6934b93f062cfacf5054b457cab2c5561e4145f5");
+            System.out.println("checkout() works as expected.");
+        } catch (Exception e) {
+            System.out.println("commit() did not function as expected");
+
+        }
 
     }
 
