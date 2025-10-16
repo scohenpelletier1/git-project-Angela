@@ -67,8 +67,47 @@ public class GitWrapper {
      * @throws IOException 
     */
     public String commit(String author, String message) throws IOException {
-        return Git.createNewCommit(author, message);
+        // create the string builder
+        StringBuilder commitMessage = new StringBuilder();
         
+        // add to the commit message
+        commitMessage.append("tree: " + Git.genTreesFromIdx() + "\n");
+        commitMessage.append("parent: " + Git.getLastCommit() + "\n");
+        
+        // update commit message
+        commitMessage.append("author: " + author + "\n");
+
+        // timeee
+        Calendar cal = Calendar.getInstance();
+        int day = cal.get(Calendar.DATE);
+        int month = cal.get(Calendar.MONTH)+1;
+        int year = cal.get(Calendar.YEAR);
+
+        LocalDate currentDate = LocalDate.parse(year + "-" + month + "-" + day);
+        commitMessage.append("date: " + currentDate.getMonth() + " " + currentDate.getDayOfMonth() + ", " + currentDate.getYear() + "\n");
+
+        // input message
+        commitMessage.append("summary: " + message);
+
+        // create commit file
+        File commitFile = new File("tempName");
+        Path tempName = Paths.get("tempName");
+
+        // write message
+        BufferedWriter writer = new BufferedWriter(new FileWriter(commitFile));
+        writer.write(commitMessage.toString());
+        writer.close();
+
+        // update the commit file path
+        String hash = Git.hashFile(commitFile.getPath());
+        Path newName = Paths.get("git/objects/" + hash);
+
+        Files.move(tempName, newName, StandardCopyOption.REPLACE_EXISTING);
+
+        // update HEAD file
+        Git.updateHead(new File(hash));
+
+        return hash;
     }
 
     /**
