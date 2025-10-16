@@ -232,22 +232,15 @@ public class Git {
         return root.sha;
     }
 
-    public static String createNewCommit() throws IOException {
+    public static String createNewCommit(String author, String message) throws IOException {
         // create the string builder
         StringBuilder commitMessage = new StringBuilder();
         
         // add to the commit message
         commitMessage.append("tree: " + genTreesFromIdx() + "\n");
         commitMessage.append("parent: " + getLastCommit() + "\n");
-
-        // input of author name
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Author name: ");
+        commitMessage.append("author: " + author + "\n");
         
-        // update commit message
-        commitMessage.append("author: " + scanner.nextLine() + "\n");
-        scanner.reset();
-
         // timeee
         Calendar cal = Calendar.getInstance();
         int day = cal.get(Calendar.DATE);
@@ -255,12 +248,14 @@ public class Git {
         int year = cal.get(Calendar.YEAR);
 
         LocalDate currentDate = LocalDate.parse(year + "-" + month + "-" + day);
-        commitMessage.append("date: " + currentDate.getMonth() + " " + currentDate.getDayOfMonth() + ", " + currentDate.getYear() + "\n");
+        int currentDay = currentDate.getDayOfMonth();
+        String currentMonth = currentDate.getMonth().toString().substring(0, 1) + currentDate.getMonth().toString().toLowerCase().substring(1, 3);
+        int currentYear = currentDate.getYear();
+
+        commitMessage.append("date: " + currentMonth + " " + currentDay + ", " + currentYear + "\n");
 
         // input message
-        System.out.print("Commit message: ");
-        commitMessage.append("message: " + scanner.nextLine());
-        scanner.reset(); // cannot close scanner because otherwise this method can't be run anymore
+        commitMessage.append("message: " + message);
 
         // create commit file
         File commitFile = new File("tempName");

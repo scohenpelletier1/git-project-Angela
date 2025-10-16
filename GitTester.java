@@ -1,5 +1,4 @@
 import java.io.*;
-import java.text.FieldPosition;
 
 public class GitTester extends Git {
 
@@ -145,19 +144,6 @@ public class GitTester extends Git {
         System.out.println(Git.genTreesFromIdx()); // all blobs are correct
         System.out.println();
 
-        // testing the commmit process
-        System.out.println("==createNewCommit()==");
-        // System.out.println(Git.createNewCommit());
-
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("samples/dirOne/file1.txt"))) {
-            bufferedWriter.write("I have now updated this file that has the file path samples/dirOne/file1.txt");
-        }
-
-        blob("samples/dirOne/file1.txt");
-        addToIdx(hashFile("samples/dirOne/file1.txt"), "samples/dirOne/file1.txt");
-
-        // System.out.println(Git.createNewCommit());
-        System.out.println();
         cleanUp();
 
         // TESTING GIT WRAPPER NOW
@@ -194,7 +180,7 @@ public class GitTester extends Git {
 
         System.out.println("==commit()==");
         try {
-            System.out.println(gw.commit("John Doe", "Initial commit"));
+            System.out.println("Initial commit: " + gw.commit("John Doe", "Initial commit"));
 
             try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("myProgram/hello.txt"))) {
                 bufferedWriter.write("Hello, World!");
@@ -203,21 +189,12 @@ public class GitTester extends Git {
             blob("myProgram/hello.txt");
             addToIdx(hashFile("myProgram/hello.txt"), "myProgram/hello.txt");
 
-            System.out.println(gw.commit("Sophia", "Second commit"));
+            System.out.println("Second commit: " + gw.commit("Sophia", "Second commit"));
             System.out.println("commit() works as expected.");
         } catch (Exception e) {
             System.out.println("commit() did not function as expected");
         }
         System.out.println();
-
-        System.out.println("==checkout()==");
-        try {
-            gw.checkout("6934b93f062cfacf5054b457cab2c5561e4145f5");
-            System.out.println("checkout() works as expected.");
-        } catch (Exception e) {
-            System.out.println("commit() did not function as expected");
-
-        }
 
     }
 
