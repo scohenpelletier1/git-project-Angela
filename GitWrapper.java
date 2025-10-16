@@ -1,21 +1,16 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.Calendar;
-import java.util.Scanner;
 
 public class GitWrapper {
 
@@ -84,7 +79,11 @@ public class GitWrapper {
         int year = cal.get(Calendar.YEAR);
 
         LocalDate currentDate = LocalDate.parse(year + "-" + month + "-" + day);
-        commitMessage.append("date: " + currentDate.getMonth() + " " + currentDate.getDayOfMonth() + ", " + currentDate.getYear() + "\n");
+        int currentDay = currentDate.getDayOfMonth();
+        String currentMonth = currentDate.getMonth().toString().substring(0, 1) + currentDate.getMonth().toString().toLowerCase().substring(1, 3);
+        int currentYear = currentDate.getYear();
+
+        commitMessage.append("date: " + currentMonth + " " + currentDay + ", " + currentYear + "\n");
 
         // input message
         commitMessage.append("summary: " + message);
